@@ -48,3 +48,75 @@ O pipeline está configurado para gerar um alerta sempre que um endereço IP apr
 │   ├── generator.py    # Produtor de logs (Kafka Producer)
 │   └── processor.py    # Processador Spark (Kafka Consumer)
 └── requirements.txt    # Dependências do projeto
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Monitorando
+    
+    Monitorando --> AnalisandoFalha : Login com status "failed"
+    AnalisandoFalha --> Monitorando : Contagem <= 5 falhas/min
+    
+    AnalisandoFalha --> AlertaGerado : Contagem > 5 falhas/min
+    state AlertaGerado {
+        [*] --> IdentificarIP
+        IdentificarIP --> RegistrarLogAtaque
+    }
+    
+    AlertaGerado --> Monitorando : Janela de tempo resetada
+    Monitorando --> [*] : Encerrar Stream
+
+```
+
+```mermaid
+sequenceDiagram
+    participant S as Script Ingestion (.py)
+    participant K as Apache Kafka
+    participant Sp as Apache Spark (Streaming)
+    participant D as Dashboard/Console
+
+    Note over S, D: Fluxo Contínuo de Dados (Streaming)
+    
+    loop A cada tentativa de login
+        S->>K: Envia log (IP, status, timestamp)
+    end
+
+    loop Processamento em Janela (1 min)
+        K->>Sp: Consome micro-batch de logs
+        Note right of Sp: Filtra "failed" [cite: 16]<br/>Agrupa por IP [cite: 17]
+        alt Se count > 5
+            Sp->>D: Emite Alerta de Força Bruta
+        else Se count <= 5
+            Sp->>Sp: Descarta (Normal)
+        end
+    end
+```
+
+```mermaid
+graph TD
+    subgraph Atores
+        S[Servidor de Logs]
+        A[Analista de Segurança]
+    end
+
+    subgraph Sistema_Sentinel [Sistema de Monitoramento]
+        UC1(Gerar Logs de Login)
+        UC2(Ingestão via Kafka)
+        UC3(Processamento Spark Streaming)
+        UC4(Detecção de Força Bruta)
+        UC5(Visualização no Dashboard)
+    end
+
+    S --> UC1
+    UC1 --> UC2
+    UC2 --> UC3
+    UC3 --> UC4
+    UC4 --> UC5
+    UC5 --> A
+```
+
+
+
+
+
+1

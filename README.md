@@ -6,6 +6,7 @@
 
 
 ![teste](./Gemini_Generated_Image_bbgg4ebbgg4ebbgg.png)
+![teste2](./Gemini_Generated_Image_rmhodmrmhodmrmho.png)
 O **LogGuardian** é um pipeline de Big Data projetado para processar fluxos massivos de logs de autenticação em tempo real. O sistema identifica tentativas de ataques de força bruta (Brute Force) e anomalias de acesso utilizando processamento de stream.
 
 ---
